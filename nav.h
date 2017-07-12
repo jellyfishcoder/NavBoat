@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <memory>
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 namespace Nav {
 	struct Vec2 {
@@ -11,33 +13,37 @@ namespace Nav {
 		float x, y;
 		Vec2 operator+(const Vec2& other);
 		Vec2 operator=(const Vec2& other) noexcept;
+		Vec2 operator*(float s) const noexcept;
 	};
+	Vec2 operator*(const Vec2& v, float s) noexcept;
+	Vec2 operator*(float s, const Vec2& v) noexcept;
 	inline bool operator==(const Vec2& lhs, const Vec2& rhs) { return (lhs.x == rhs.x && lhs.y == rhs.y); }
 	inline bool operator!=(const Vec2& lhs, const Vec2& rhs) { return lhs != rhs; }
 
 	class Area {
 		public:
 			virtual ~Area() =0;
-			virtual bool contains(Nav::Vec2 point) =0;
+			virtual bool contains(const Nav::Vec2& point) const =0;
 			virtual Nav::Area& intesects(const Area& other) =0;
 	};
 
 	class CircleArea: public Area {
+		friend class PolyArea;
 		public:
-			CircleArea(Nav::Vec2 _centre, float _radius);
+			CircleArea(const Nav::Vec2& _centre, float _radius);
 			virtual ~CircleArea();
-			virtual bool contains(Nav::Vec2 point);
-		private:
+			virtual bool contains(const Nav::Vec2& point) const;
 			Nav::Vec2 centre;
 			float radius;
 	};
 
 	class PolyArea: public Area {
 		public:
+			PolyArea();
+			PolyArea(const CircleArea& area, unsigned int resolution = 8);
 			virtual ~PolyArea();
-			virtual bool contains(Nav::Vec2 point);
+			virtual bool contains(const Nav::Vec2& point) const;
 			virtual Nav::Area& intersects(const Area& other);
-		private:
 			std::vector<Nav::Vec2> points;
 	};
 
